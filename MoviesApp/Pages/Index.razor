@@ -1,0 +1,146 @@
+﻿@page "/"
+@inject MoviesService moviesService
+@inject StorageService storageService
+
+<PageTitle>Movies</PageTitle>
+
+@if (movie is not null)
+{
+    <div class="movies-back">
+        <img src="@(baseUrl + movie.Backdrop_path)" height="1080" alt="movie image"/>
+        <div class="movies-shade">
+            <div class="movies-shade-info">
+                @if (images?.Logos?.FirstOrDefault() is not null)
+                {
+                    <img src="@(baseUrl + images?.Logos?[0].File_path)" alt="movie title" width="300" />
+                }
+                else
+                {
+                    <h1>@movie.Title</h1>
+                }
+
+                @if(movie.Overview != string.Empty)
+                {
+                    <p>@movie.Overview</p>
+                }
+                <div class="movies-shade-popularity">
+                    <span>@Convert.ToDateTime(@movie.Release_date).Year</span>
+                    <span class="movies-shade-imdb">
+                        <Icon IconName="IMDB" />
+                    </span>
+                    <span>@Math.Round(movie.Vote_average, 1)</span>
+                </div>
+                <div class="movies-shade-actions">
+                    <a href="Details/@movie.Id" arial-label="ver"><Icon IconName="Play" /> Ver</a>
+                    <button @onclick="e => isInFavorites ? Remove(favoritesKey) : Add(favoritesKey)"
+                            aria-label="@(isInFavorites ? "remove from favorites" : "add to favorites")">
+                        @if(!isInFavorites)
+                        {
+                            <Icon IconName="BookMark" />
+                        }
+                        else
+                        {
+                            <Icon IconName="BookMarkFill" />
+                        }
+                    </button>
+
+                    <button @onclick="e => isInWatchList ? Remove(watchListKey) : Add(watchListKey)"
+                            aria-label="@(isInWatchList ? "remove from watchlist" : "add to watchlist")">
+                        @if (!isInWatchList)
+                        {
+                            <Icon IconName="StopWatch" />
+                        }
+                        else
+                        {
+                            <Icon IconName="StopWatchFill" />
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (favorites is not null && watchList is not null)
+    {
+        <div class="movies-lists">
+            <h1>Lo más popular</h1>
+            <p>¡Disfruta aquí de las películas más populares!</p>
+            <MoviesListComponent moviesList="popularMovies" favorites="favorites" watchList="watchList" />
+
+            <h1>Mejor valorados</h1>
+            <p>Las mejores películas valoradas por el resto de usuarios</p>
+            <MoviesListComponent moviesList="topRatedMovies" favorites="favorites" watchList="watchList" />
+
+            <h1>Próximamente</h1>
+            <p>¡No te vayas a perder las próximas películas a estrenar!</p>
+            <MoviesListComponent moviesList="upComingMovies" favorites="favorites" watchList="watchList" />
+        </div>
+    }
+}
+
+@code {
+    private MoviesList? upComingMovies;
+    private MoviesList? popularMovies;
+    private MoviesList? topRatedMovies;
+    private Movie? movie;
+    private MovieImages? images;
+    private Dictionary<int, bool>? favorites;
+    private Dictionary<int, bool>? watchList;
+    private bool isInFavorites = false;
+    private bool isInWatchList = false;
+    private string favoritesKey = "Favorites";
+    private string watchListKey = "WatchList";
+    private string baseUrl = "https://image.tmdb.org/t/p/original/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        upComingMovies = await moviesService.GetUpComingMovies();
+        popularMovies = await moviesService.GetPopularMovies();
+        topRatedMovies = await moviesService.GetTopRatedMovies();
+        await GetRandomMovie();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            favorites = await storageService.CreateDictionary(favoritesKey);
+            watchList = await storageService.CreateDictionary(watchListKey);
+            StateHasChanged();
+        }
+    }
+
+    private async Task GetRandomMovie()
+    {
+        var random = new Random();
+        int num = random.Next(0, 19);
+        movie = popularMovies?.Results?.ElementAt(num);
+        images = await moviesService.GetMovieImages(movie!.Id);
+
+        if (favorites is not null && favorites.ContainsKey(movie!.Id))
+            isInFavorites = true;
+
+        if (watchList is not null && watchList.ContainsKey(movie!.Id))
+            isInWatchList = true;
+    }
+
+    private async Task Add(string key)
+    {
+        await storageService.Add(key, movie!);
+        ChangeState(key);
+    }
+
+    private async Task Remove(string key)
+    {
+        await storageService.Remove(key, movie!.Id);
+        ChangeState(key);
+    }
+
+    private void ChangeState(string key)
+    {
+        if (key == favoritesKey)
+            isInFavorites = !isInFavorites;
+        else
+            isInWatchList = !isInWatchList;
+    }
+}

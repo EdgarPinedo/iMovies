@@ -1,0 +1,71 @@
+﻿@page "/Genres/{name}/{id}"
+@inject MoviesService moviesService
+@inject StorageService storageService
+
+@if (movies is not null && favorites is not null && watchList is not null)
+{
+    <div class="results-container">
+        <div class="backdrop">
+            <img src="/images/backdrop.jpg" height="150"/>
+            <h1>@name.ToUpper()</h1>
+        </div>
+        <div class="results-grid">
+            @foreach (var movie in movies.Results)
+            {
+                if (movie.Poster_path is not null)
+                {
+                    <div class="results-movie">
+                        <MovieComponent movie="movie"
+                                        isInFavorites="favorites.ContainsKey(movie.Id)"
+                                        isInWatchList="watchList.ContainsKey(movie.Id)" />
+                    </div>
+                }
+            }
+        </div>
+        <button @onclick="LoadMore" class="@noMorePages">Cargar más</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string name { get; set; } = string.Empty;
+    [Parameter]
+    public string id { get; set; } = string.Empty;
+
+    private int page = 1;
+    private MoviesList? movies;
+    private Dictionary<int, bool>? favorites;
+    private Dictionary<int, bool>? watchList;
+    private string? noMorePages => (movies?.Total_pages == page) ? "hide-btn" : null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        movies = null;
+        page = 1;
+        movies = await moviesService.GetMoviesByGenre(id, page);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            favorites = await storageService.CreateDictionary("Favorites");
+            watchList = await storageService.CreateDictionary("WatchList");
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        page++;
+        var _movies = await moviesService.GetMoviesByGenre(id, page);
+
+        if (_movies?.Results.Count > 0)
+        {
+            foreach (var movie in _movies.Results)
+            {
+                movies?.Results.Add(movie);
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+﻿@inject IJSRuntime JS
+
+@if (moviesList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="slider-container">
+        <button id="left-@id" @onclick="e => toLeft(id)" class="slider-button left" aria-label="left button">
+            <Icon IconName="Left" />
+        </button>
+        <div id="@id" class="slider">
+            @foreach (var result in moviesList.Results)
+            {
+                if (result.Poster_path is not null)
+                {
+                    <MovieComponent movie="result"
+                                    isInFavorites="favorites.ContainsKey(result.Id)"
+                                    isInWatchList="watchList.ContainsKey(result.Id)" />
+                }
+            }
+        </div>
+        <button id="right-@id" @onclick="e => toRight(id)" class="slider-button right" aria-label="right button">
+            <Icon IconName="Right" />
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public MoviesList? moviesList { get; set; }
+    [Parameter]
+    public Dictionary<int, bool> favorites { get; set; } = new();
+    [Parameter]
+    public Dictionary<int, bool> watchList { get; set; } = new();
+
+    private Guid id = Guid.NewGuid();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("createOnScrollEvent", id);
+        }
+    }
+
+    public async void toLeft(Guid id)
+    {
+        await JS.InvokeVoidAsync("toLeft", id);
+    }
+
+    public async void toRight(Guid id)
+    {
+        await JS.InvokeVoidAsync("toRight", id);
+    }
+}

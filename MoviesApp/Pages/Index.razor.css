@@ -1,0 +1,129 @@
+﻿h1 {
+    font-size: 1.75rem;
+}
+
+h1:not(:first-of-type) {
+    margin-top: 100px;
+}
+
+p {
+    margin-bottom: 20px;
+    color: var(--secondary-text-color);
+}
+
+.movies-back {
+    position: relative;
+}
+
+.movies-back img {
+    width: 100%;
+    object-fit: cover;
+}
+
+.movies-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1080px;
+    width: 100%;
+    background: linear-gradient(to top, rgb(0,0,0, 1), rgb(0,0,0, 0), rgb(0,0,0, 0));
+}
+
+.movies-shade-info {
+    padding: 0 50px;
+    width: 100%;
+    max-width: 960px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(to right, rgb(0,0,0, 1), rgb(0,0,0, 0));
+}
+
+    .movies-shade-info img {
+        width: 300px;
+        margin-top: -250px;
+    }
+
+    .movies-shade-info h1 {
+        font-size: 35px;
+        margin-top: -250px;
+    }
+
+    .movies-shade-info p {
+        margin: 30px 0 0;
+        color: var(--primary-text-color);
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 1.2rem;
+        line-height: 25px;
+        max-width: 600px;
+    }
+
+.movies-shade-popularity {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin: 20px 0 40px;
+}
+
+.movies-shade-imdb {
+    display: flex;
+}
+
+.movies-shade-popularity span:last-of-type {
+    margin-left: -10px;
+}
+
+.movies-shade-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+    .movies-shade-actions a {
+        padding: 10px 25px 10px 20px;
+        border-radius: 10px;
+        color: #000;
+        background: var(--purple-text-color);
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .movies-shade-actions button {
+        height: 38px;
+        width: 38px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        border: 2px solid var(--purple-text-color);
+        color: var(--purple-text-color);
+    }
+
+    .movies-shade-actions ::deep a:hover {
+        background: var(--active-color);
+        color: var(--primary-text-color);
+    }
+
+
+.movies-lists {
+    position: relative;
+    z-index: 1;
+    margin-top: -360px;
+    padding: 0 50px;
+}
+
+@media (max-width: 747px) {
+    .movies-lists {
+        padding: 0 20px;
+    }
+
+    .movies-shade-info {
+        padding: 0 20px;
+    }
+}

@@ -1,0 +1,79 @@
+﻿@inject MoviesService moviesService
+@inject IJSRuntime JS
+
+<div class="navbar-container" @onclick="Close">
+    <div class="navbar-left-container">
+        <div class="navbar-left">
+            <button class="navbar-toggler" aria-label="menu button" @onclick="ToggleNavMenu"
+                    @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                </svg>
+            </button>
+            <a class="navbar-brand" href="">iMovies</a>
+        </div>
+        <div class="nav-container @hide">
+            <nav>
+                <div class="nav-item">
+                    <button class="@activeMovies active-small-screen" aria-label="películas" @onclick="ToggleMoviesMenu"
+                            @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                        Generos
+                    </button>
+                    <div class="genres-container @openMoviesMenu">
+                        <div class="genres-grid">
+                            @if (movieGenres is not null)
+                            {
+                                @foreach (var genre in movieGenres.Genres)
+                                {
+                                    <a href="/Genres/@genre.Name/@genre.Id">@genre.Name</a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <div class="navbar-right">
+        <a href="Search" aria-label="go to search">
+            <Icon IconName="Search" />
+        </a>
+        <a href="Watch/Favorites" aria-label="go to favorites">
+            <Icon IconName="BookMark" />
+        </a>
+    </div>
+</div>
+
+@code {
+    GenresList? movieGenres;
+    private bool collapseNavMenu = false;
+    private bool isMoviesMenuOpen = false;
+
+    private string? hide => collapseNavMenu ? "bg-black" : null;
+    private string? openMoviesMenu => isMoviesMenuOpen ? "menu-active" : null;
+    private string? activeMovies => isMoviesMenuOpen ? "active" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movieGenres = await moviesService.GetMovieGenres();
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void ToggleMoviesMenu()
+    {
+        isMoviesMenuOpen = !isMoviesMenuOpen;
+    }
+
+    private void Close()
+    {
+        if (isMoviesMenuOpen)
+            isMoviesMenuOpen = !isMoviesMenuOpen;
+
+        if (collapseNavMenu)
+            collapseNavMenu = !collapseNavMenu;
+    }
+}

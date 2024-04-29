@@ -1,0 +1,68 @@
+﻿.movie {
+    min-width: 260px;
+    overflow: hidden;
+    position: relative;
+}
+
+.movie img {
+    height: 100%;
+    object-fit: cover;
+}
+
+.movie-details {
+    background: rgb(0,0,0, .85);
+    color: var(--primary-text-color);
+    text-decoration: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 15px;
+}
+
+.movie:hover .movie-details,
+.movie:focus .movie-details,
+.movie:hover .movie-actions,
+.movie:focus .movie-actions {
+    visibility: visible;
+}
+
+.movie-votes {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.movie-overview {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.movie-actions {
+    position: absolute;
+    padding: 10px;
+    bottom: 0;
+    visibility: hidden;
+    display: flex;
+    flex-direction: row;
+}
+
+.movie-actions button {
+    background: transparent;
+    padding: 10px;
+    border: none;
+    color: var(--purple-text-color);
+    width: 43px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,24 @@
+﻿@if (Id is not null)
+{
+    <div class="back" @onclick="ClosePopup">
+        <div>
+            <span>Close</span>
+            <iframe width="1245" height="700" src="@($"https://www.youtube-nocookie.com/embed/{Id}?si=EHVJoZtToThKHeiU")" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+    </div>
+}
+
+@code {
+    private string? Id { get; set; }
+
+    public void ShowPopup(string id)
+    {
+        Id = id;
+        StateHasChanged();
+    }
+
+    private void ClosePopup()
+    {
+        Id = null;
+    }
+}

@@ -1,0 +1,35 @@
+﻿.back {
+    position: fixed;
+    top: 0;
+    width: 100dvw;
+    height: 100dvh;
+    background: rgb(0,0,0, 0.3);
+    backdrop-filter: blur(3px);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    overflow: auto;
+}
+
+    .back div {
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        text-align: right;
+        gap: 5px;
+    }
+
+    .back div span {
+        cursor: pointer;
+    }
+
+    .back div iframe {
+        max-width: 100%;
+        display: block;
+        aspect-ratio: 16/9;
+        height: auto;
+        max-height: 100%;
+    }

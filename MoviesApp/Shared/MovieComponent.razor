@@ -1,0 +1,79 @@
+﻿@inject StorageService storageService
+
+<div class="movie">
+    <img src="@(baseUrl + movie.Poster_path)" width="260" alt="movie image" loading="lazy"/>
+    <a href="Details/@movie.Id" class="movie-details">
+        <span>@movie.Title</span>
+        <span class="movie-votes">
+            @Math.Round(movie.Vote_average, 1)
+            <Icon IconName="Star" />
+            (@VoteCountToString())
+        </span>
+        <p class="movie-overview">@movie.Overview</p>
+    </a>
+    <div class="movie-actions">
+        <button @onclick="e => isInFavorites ? Remove(favoritesKey) : Add(favoritesKey)"
+                aria-label="@(isInFavorites ? "remove from favorites" : "add to favorites")">
+            @if(!isInFavorites)
+            {
+                <Icon IconName="BookMark" />
+            }
+            else
+            {
+                <Icon IconName="BookMarkFill" />
+            }
+        </button>
+
+        <button @onclick="e => isInWatchList ? Remove(watchListKey) : Add(watchListKey)"
+                aria-label="@(isInWatchList ? "remove from watchlist" : "add to watchlist")">
+            @if (!isInWatchList)
+            {
+                <Icon IconName="StopWatch"/>
+            }
+            else
+            {
+                <Icon IconName="StopWatchFill"/>
+            }
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Movie movie { get; set; } = null!;
+    [Parameter]
+    public bool isInFavorites { get; set; }
+    [Parameter]
+    public bool isInWatchList { get; set; }
+
+    string favoritesKey = "Favorites";
+    string watchListKey = "WatchList";
+    private string baseUrl = "https://image.tmdb.org/t/p/w500/";
+
+    private async Task Add(string _key)
+    {
+        await storageService.Add(_key, movie);
+        ChangeState(_key);
+    }
+
+    private async Task Remove(string _key)
+    {
+        await storageService.Remove(_key, movie.Id);
+        ChangeState(_key);
+    }
+
+    private void ChangeState(string key)
+    {
+        if (key == favoritesKey)
+            isInFavorites = !isInFavorites;
+        else
+            isInWatchList = !isInWatchList;
+    }
+
+    private string VoteCountToString()
+    {
+        return (movie.Vote_count > 1000)
+            ? $"{Math.Round(movie.Vote_count / (float)1000, 1)}k"
+            : movie.Vote_count.ToString();
+    }
+}

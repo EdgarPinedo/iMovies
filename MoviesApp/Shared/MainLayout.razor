@@ -1,0 +1,14 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager navigation
+
+<PageTitle>MoviesApp</PageTitle>
+
+<div class="page">
+    <header class="sidebar">
+        <NavMenu />
+    </header>
+    @{string Class = (navigation.Uri == navigation.BaseUri) ? "mt-60": "";}
+    <main class="@Class">
+        @Body
+    </main>
+</div>

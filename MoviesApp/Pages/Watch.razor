@@ -1,0 +1,98 @@
+﻿@page "/Watch/{listTitle}"
+@inject StorageService storageService
+@inject NavigationManager navigation
+
+<div class="watch-container">
+<h1>Mis Listas</h1>
+<div class="watch-links">
+    <NavLink href="/Watch/Favorites" class="btn-link">Favoritos</NavLink>
+    <NavLink href="/Watch/WatchList" class="btn-link">Ver más tarde</NavLink>
+</div>
+<hr />
+    @if(movies is null || movies.Count == 0)
+    {
+        <span class="watch-empty">Aún no tienes nada en la lista</span>
+    }
+    else
+    {
+        <div class="watch-grid">
+            @foreach (var movie in movies)
+            {
+                <div class="movie-center">
+                    <div class="movie-container">
+                        <a href="Details/@movie.Id" class="movie">
+                            <img src="@(baseUrl + movie.Poster_path)" width="260" />
+                            <div class="movie-details">
+                                <span>@movie.Title</span>
+                                <span class="movie-votes">
+                                    @Math.Round(movie.Vote_average, 1)
+                                    <Icon IconName="Star" />
+                                    (@VoteCountToString(movie.Vote_count))
+                                </span>
+                            </div>
+                        </a>
+                        <div class="movie-actions">
+                            <button @onclick="e => RemoveMovie(movie.Id)">
+                                <Icon IconName="Delete" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+@code {
+    [Parameter]
+    public string? ListTitle { get; set; }
+
+    private List<Movie>? movies;
+    private string? title = string.Empty;
+    private string favoritesKey = "Favorites";
+    private string watchListKey = "WatchList";
+    private string baseUrl = "https://image.tmdb.org/t/p/w500/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SetMovies();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(ListTitle != title)
+        {
+            await SetMovies();
+            StateHasChanged();
+        }
+    }
+
+    public async Task SetMovies()
+    {
+        title = ListTitle;
+        movies = (ListTitle == favoritesKey)
+            ? await storageService.Get(favoritesKey)
+            : await storageService.Get(watchListKey);
+    }
+
+    public async Task RemoveMovie(int id)
+    {
+        movies?.RemoveAll(r => r.Id == id);
+        if (ListTitle == "Favorites")
+        {
+            await storageService.Set(favoritesKey, movies!);
+        }
+        else
+        {
+            await storageService.Set(watchListKey, movies!);
+        }
+    }
+
+    private string VoteCountToString(int voteCount)
+    {
+        return (voteCount > 1000)
+            ? $"{Math.Round(voteCount / (float)1000, 1)}k"
+            : voteCount.ToString();
+    }
+}

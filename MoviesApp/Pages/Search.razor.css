@@ -1,0 +1,116 @@
+﻿.input-container {
+    height: 100px;
+    position: relative;
+}
+
+.input-container img {
+    object-fit: cover;
+    width: 100%;
+    opacity: 0.3;
+}
+
+.input-container div {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+input {
+    width: 95%;
+    max-width: 600px;
+    font-size: 1.4rem;
+    background: var(--background-color);
+    border: 2px solid var(--active-color);
+    padding: 5px 15px;
+    border-radius: 20px;
+    color: var(--primary-text-color);
+}
+
+    input:focus {
+        outline: transparent;
+        border-color: var(--purple-text-color);
+    }
+
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.previous-querys-container {
+    margin: 50px 0;
+    max-width: 1000px;
+    width: 95%;
+}
+
+.previous-querys {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .previous-querys div {
+        display: flex;
+        gap: 1px;
+    }
+
+    .previous-querys div button {
+        display: flex;
+        align-items: center;
+        background: var(--purple-text-color);
+        color: var(--background-color);
+        cursor: pointer;
+    }
+
+        .previous-querys div button:first-of-type {
+            border-radius: 20px 0 0 20px;
+            padding: 5px 10px;
+        }
+
+        .previous-querys div button:last-of-type {
+            border-radius: 0 20px 20px 0;
+            padding: 5px 5px;
+        }
+
+    .previous-querys div button:hover {
+        background: var(--active-color);
+        color: var(--primary-text-color);
+    }
+
+.results-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    row-gap: 20px;
+    width: 95%;
+    max-width: 1110px;
+}
+
+.results-movie {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.load-btn {
+    background: var(--purple-text-color);
+    padding: 10px 15px;
+    border-radius: 10px;
+}
+
+    .load-btn:hover {
+        background: var(--active-color);
+        color: var(--primary-text-color);
+    }
+
+.hide-btn {
+    display: none;
+}

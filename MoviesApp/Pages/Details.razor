@@ -1,0 +1,160 @@
+﻿@page "/Details/{Id}"
+@using System.Globalization;
+@inject MoviesService moviesService
+@inject StorageService storageService
+
+@if(details is not null)
+{
+    <div class="details-container">
+        <div class="details-backdrop-shade">
+            @if (details.Backdrop_path is not null)
+            {
+                <img class="details-backdrop" src="@(imageBaseUrl + details.Backdrop_path)"
+                     height="1080" alt="movie image" />
+            }
+        </div>
+
+        @{
+            string? noBackdrop = null;
+            if (details.Backdrop_path is null)
+                noBackdrop = "no-backdrop";
+        }
+
+        <div class="details @noBackdrop">
+            <img class="details-poster" src="@(imageBaseUrl + details.Poster_path)" width="400"/>
+            <div class="details-info">
+                <h1>@details.Title</h1>
+                <span class="details-tagline">@details.Tagline</span>
+                <div class="details-vote">
+                    <Icon IconName="IMDB" />
+                    <span>@Math.Round(@details.Vote_average, 1)</span>
+                    @if(videos is not null)
+                    {
+                        <button class="details-play" @onclick="e => popup?.ShowPopup(videos![0].Key)">
+                            <Icon IconName="Play" />
+                            <span>Ver Trailer</span>
+                        </button>
+                    }
+                </div>
+                <div class="details-genres">
+                    @foreach (var genre in details.Genres!)
+                    {
+                        <a href="/Genres/@genre.Name/@genre.Id">@genre.Name</a>
+                    }
+                </div>
+                <p>@details.Overview</p>
+                <div class="details-extra">
+                    <div>
+                        <span>Estado:</span>
+                        <span>@((details.Status == "Released") ? "Publicado" : "Próximamente")</span>
+                    </div>
+                    <div>
+                        <span>Fecha de estreno:</span>
+                        <span>@details.Release_date</span>
+                    </div>
+                    <div>
+                        <span>Duración:</span>
+                        <span>@details.Runtime min</span>
+                    </div>
+                </div>
+                <hr/>
+                <div class="details-crew">
+                    <span>Directores:</span>
+                    <span>@getCrew("Directing")</span>
+                </div>
+                <hr/>
+                <div class="details-crew">
+                    <span>Escritores:</span>
+                    <span>@getCrew("Writing")</span>
+                </div>
+                <hr />
+
+                @if (actors is not null)
+                {
+                    <h2>Elenco principal</h2>
+                    <div class="details-elenco">
+                        @foreach (var actor in actors)
+                        {
+                            @if (actor.Profile_path != null)
+                            {
+                                <div>
+                                    <img src="@(imageBaseUrl + actor.Profile_path)" width="110" height="165" />
+                                    <span>@actor.Name</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        @if (favorites is not null && watchList is not null && similarMovies?.Total_results > 0)
+        {
+            <div class="details-similar">
+                <h2>Peliculas similares</h2>
+                <MoviesListComponent moviesList="similarMovies" favorites="favorites" watchList="watchList" />
+            </div>
+        }
+    </div>
+
+    <PopupVideo @ref="popup"/>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private Detail? details = null;
+    private List<Cast>? actors;
+    private PopupVideo popup = default!;
+    private List<Result>? videos;
+    private CastList? cast;
+    private MoviesList? similarMovies;
+    private Dictionary<int, bool>? favorites;
+    private Dictionary<int, bool>? watchList;
+    private const string imageBaseUrl = "https://image.tmdb.org/t/p/original";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        videos = null;
+        details = await moviesService.GetDetails(Convert.ToInt32(Id));
+        cast = await moviesService.GetCast(Convert.ToInt32(Id));
+        actors = cast?.Cast?.Take(5).ToList();
+        SetVideos();
+        similarMovies = await moviesService.GetSimilarMovies(Convert.ToInt32(Id));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            favorites = await storageService.CreateDictionary("Favorites");
+            watchList = await storageService.CreateDictionary("WatchList");
+            StateHasChanged();
+        }
+    }
+
+    private void SetVideos()
+    {
+        if(details?.Videos?.Results?.Count > 0)
+        {
+            videos = details.Videos.Results;
+        }
+    }
+
+    private string getCrew(string deparment)
+    {
+        var crew = cast?.Crew?.Where(c => c.Department == deparment);
+        string names = string.Empty;
+
+        if(crew is not null)
+        {
+            foreach (var person in crew)
+            {
+                if (names != string.Empty)
+                    names += ", ";
+                names += person.Name;
+            }
+        }
+        return names;
+    }
+}

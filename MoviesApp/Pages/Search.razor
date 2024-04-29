@@ -1,0 +1,141 @@
+﻿@page "/search"
+@inject MoviesService moviesService
+@inject StorageService storageService
+
+<div class="input-container">
+    <img src="/images/backdrop.jpg" height="100" />
+    <div>
+        <input type="text" placeholder="Buscar..."
+            @bind-value="query" @bind-value:event="oninput" @onkeyup="OnInput"/>
+    </div>
+</div>
+
+@if (querys.Count > 0)
+{
+    <div class="center">
+        <div class="previous-querys-container">
+            <h3>Resultados de búsquedas recientes</h3>
+            <div class="previous-querys">
+                @foreach (var query in querys)
+                {
+                    <div>
+                        <button @onclick="e => SetAndSearch(query)">@query.ToUpper()</button>
+                        <button @onclick="e => RemoveQuery(query)"><Icon IconName="Close" /></button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (movies is not null && favorites is not null && watchList is not null)
+{
+    <div class="results-container">
+        @if (movies.Results.Count > 0)
+        {
+            <div class="results-grid">
+                @foreach (var movie in movies.Results)
+                {
+                    if (movie.Poster_path is not null)
+                    {
+                        <div class="results-movie">
+                            <MovieComponent movie="movie"
+                                            isInFavorites="favorites.ContainsKey(movie.Id)"
+                                            isInWatchList="watchList.ContainsKey(movie.Id)" />
+                        </div>
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <span>No hemos podido encontrar lo que estás buscando</span>
+        }
+        <button @onclick="LoadMore" class="load-btn @noMorePages">Cargar más</button>
+    </div>
+}
+
+@code {
+    private int page = 1;
+    private MoviesList? movies;
+    private string query { get; set; } = string.Empty;
+    private Timer timer = new(1000);
+    private Dictionary<int, bool>? favorites;
+    private Dictionary<int, bool>? watchList;
+    private List<string> querys = new();
+    private string? noMorePages => (movies?.Total_pages == page) ? "hide-btn" : null;
+
+    protected override Task OnInitializedAsync()
+    {
+        timer.AutoReset = false;
+        timer.Elapsed += Timer_Elapsed;
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            favorites = await storageService.CreateDictionary("Favorites");
+            querys = await storageService.GetSearchQuerys();
+            watchList = await storageService.CreateDictionary("WatchList");
+            StateHasChanged();
+        }
+    }
+
+    private void OnInput()
+    {
+        if (query.Length == 0)
+        {
+            movies = null;
+        }
+
+        timer.Stop();
+        timer.Start();
+    }
+
+    private async void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        await SearchQuery();
+    }
+
+    private async Task SearchQuery()
+    {
+        if (query.Length > 0)
+        {
+            page = 1;
+            movies = await moviesService.SearchMovie(query, page);
+            await storageService.AddSearchQuery(query);
+
+            querys = await storageService.GetSearchQuerys();
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task SetAndSearch(string _query)
+    {
+        page = 1;
+        movies = await moviesService.SearchMovie(_query, page);
+        query = _query;
+    }
+
+    private async Task RemoveQuery(string query)
+    {
+        await storageService.RemoveSearchQuery(query);
+        querys.Remove(query);
+    }
+
+    private async Task LoadMore()
+    {
+        page++;
+        var _movies = await moviesService.SearchMovie(query, page);
+
+        if (_movies?.Results.Count > 0)
+        {
+            foreach (var movie in _movies.Results)
+            {
+                movies!.Results.Add(movie);
+            }
+        }
+    }
+}
